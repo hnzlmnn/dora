@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import jsonify, request
 from peewee import DoesNotExist
 
-from api.api import app
+from . import app
 from db import Entry, Line
 
 

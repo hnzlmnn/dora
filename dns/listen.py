@@ -1,5 +1,4 @@
 import datetime
-import re
 
 from scapy.all import Packet
 from scapy.layers.inet import IP
@@ -10,18 +9,17 @@ import threading
 import logging
 
 from db.models import Entry
+from swiper import Swiper
 
 log = logging.getLogger(__name__)
 
 
 class DnsThread(threading.Thread):
 
-    def __init__(self, interface: str, host: bytes):
+    def __init__(self, swiper: Swiper, interface: str):
         threading.Thread.__init__(self)
+        self.swiper = swiper
         self.interface = interface
-        host = host + b"." if host[-1] != b"." else host
-        host = b"." + host if host[0] != b"." else host
-        self.schema = re.compile(rb"([a-zA-Z0-9_\-=]+).([0-9]+).([0-9a-fA-F]{32})" + host)
         self.setDaemon(True)
 
     def _disect_dns(self, dns: DNS, ip_src, v6=False):
@@ -29,7 +27,7 @@ class DnsThread(threading.Thread):
         log.debug(host)
         if not host:
             return
-        match = self.schema.match(host)
+        match = self.swiper.dns_match(host)
         if not match:
             return
         try:

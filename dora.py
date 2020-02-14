@@ -2,18 +2,16 @@
 
 import argparse
 import logging
-import signal
 import sys
 import time
-import uuid
-import binascii
 
 from api import ApiThread
-from db import Database, Entry
+from db import Database
 from dns import DnsThread
+from swiper import Swiper
 
 logging.basicConfig(level=logging.DEBUG)
-log = logging.getLogger("DNSyphon")
+log = logging.getLogger("Dora")
 
 
 class ServiceExit(Exception):
@@ -27,7 +25,7 @@ def service_shutdown(signum, frame):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="DNSyphon",
+        prog="Dora",
         description="Exfiltrate data via DNS",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -38,29 +36,31 @@ def main():
     parser.add_argument("-p", "--port", dest="port", type=int, default=3000,
                         help="port of the api")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--disable-dns", dest="dns_enabled", default=False, action="store_false",
+    group.add_argument("--disable-dns", dest="dns_enabled", action="store_false",
                        help="if set, no DNS queries will be captured")
-    group.add_argument("--disable-api", dest="api_enabled", default=False, action="store_false",
+    group.add_argument("--disable-api", dest="api_enabled", action="store_false",
                        help="if set, the api server will not be started")
 
     args = parser.parse_args()
 
     try:
-        db = Database(args.database)
-    except ValueError:
+        swiper = Swiper.instance(args.domain)
+    except UnicodeEncodeError:
+        log.error(f"Invalid domain '{args.domain}'")
         return 1
 
+    try:
+        db = Database(args.database, False)
+    except ValueError:
+        return 2
+    db.init()
+
     if args.dns_enabled:
-        try:
-            domain: bytes = args.domain.encode("ascii")
-        except UnicodeEncodeError:
-            log.error(f"Invalid domain '{args.domain}'")
-            return 2
-        dns = DnsThread("lo", domain)
+        dns = DnsThread(swiper, "lo")
         dns.start()
 
     if args.api_enabled:
-        api = ApiThread()
+        api = ApiThread(swiper)
         api.start()
 
     while True:

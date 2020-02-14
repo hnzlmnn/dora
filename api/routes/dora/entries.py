@@ -1,7 +1,7 @@
 from flask import jsonify, request
 from peewee import JOIN
 
-from api.api import app
+from . import app
 from db import Entry, Line
 
 
