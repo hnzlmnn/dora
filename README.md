@@ -52,3 +52,4 @@ Working the API requires some manual work for choosing the correct lines. Theref
 - Create a small web interface to instrument the API
 - ~~Tool for random context generation~~
 - (Add CLI)
+- Implement a metadata request to transmit line count, etc.

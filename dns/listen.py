@@ -8,7 +8,7 @@ from scapy.sendrecv import sniff
 import threading
 import logging
 
-from db.models import Entry
+from db import Entry, Meta
 from swiper import Swiper
 
 log = logging.getLogger(__name__)
@@ -29,25 +29,46 @@ class DnsThread(threading.Thread):
             return
         match = self.swiper.dns_match(host)
         if not match:
+            log.debug("not matching host")
             return
+        log.debug(match.groups())
         try:
-            line = int(match.group(2))
-        except ValueError:
-            return
-        try:
-            context = match.group(3).decode('ascii')
+            context = match.group(4).decode('ascii')
         except UnicodeDecodeError:
+            log.debug("bogus data")
             return
-        entry = Entry(
+        if not match.group(2):
+            line = 0
+            try:
+                data = int(match.group(3))
+            except ValueError:
+                log.debug("invalid line count")
+                return
+        else:
+            try:
+                line = int(match.group(2))
+            except ValueError:
+                log.debug("not matching line")
+                return
+            data = match.group(1)
+        if line == 0:
+            Meta.insert(
+                context=context,
+                source=ip_src,
+                v6=v6,
+                updated_at=datetime.datetime.now(),
+                lines=data
+            ).on_conflict_ignore().execute()
+            return
+        entry = Entry.create(
             source=ip_src,
             v6=v6,
             received_at=datetime.datetime.now(),
             context=context,
             line=line,
-            data=match.group(1)
+            data=data
         )
-        log.info(entry.summary())
-        entry.save()
+        log.debug(entry.summary())
 
     def _callback(self, pkt: Packet) -> None:
         log.debug(pkt.summary())

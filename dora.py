@@ -50,7 +50,7 @@ def main():
         return 1
 
     try:
-        db = Database(args.database, False)
+        db = Database.instance(args.database, False)
     except ValueError:
         return 2
     db.init()

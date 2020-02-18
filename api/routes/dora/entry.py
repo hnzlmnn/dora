@@ -1,12 +1,12 @@
 from flask import jsonify, request
-from peewee import JOIN
+from peewee import JOIN, DoesNotExist
 
 from . import app
-from db import Entry, Line
+from db import Entry, Line, Meta
 
 
-@app.route("/entries/<context>", methods=["GET"])
-def entries_list(context: str):
+@app.route("/entry/<context>", methods=["GET"])
+def entry_list(context: str):
     line = request.args.get("line", type=int)
     if not context:
         return jsonify(dict(
@@ -28,9 +28,14 @@ def entries_list(context: str):
     ))
 
 
-@app.route("/entries/<context>/summary", methods=["GET"])
-def entries_detail(context: str):
+@app.route("/entry/<context>/summary", methods=["GET"])
+def entry_detail(context: str):
     if not context:
+        return jsonify(dict(
+            ok=False,
+            error="Invalid context"
+        ))
+    if Entry.select().where(Entry.context == context).count() == 0:
         return jsonify(dict(
             ok=False,
             error="Invalid context"
@@ -42,16 +47,23 @@ def entries_detail(context: str):
         .join(Entry, JOIN.INNER)
         .objects(Entry)
     }
-    missing = list(map(lambda e: e[0], Entry
-                       .select(Entry.line)
-                       .join(Line, JOIN.LEFT_OUTER, on=(Line.line == Entry.line))
-                       .where(Entry.context == context, Line.selected_at == None)
-                       .distinct()
-                       .tuples()))
+    # missing = set(map(lambda e: e[0], Entry
+    #                    .select(Entry.line)
+    #                    .join(Line, JOIN.LEFT_OUTER, on=((Line.line == Entry.line) & (Line.context == Entry.context)))
+    #                    .where(Entry.context == context, Line.selected_at != None)
+    #                    .distinct()
+    #                    .tuples()))
+    try:
+        meta = Meta.get(Meta.context == context)
+    except DoesNotExist:
+        return jsonify(dict(
+            ok=False,
+            error="No metadata exist"
+        ))
     return jsonify(dict(
         ok=True,
         data=dict(
             lines=lines,
-            missing=missing
+            missing=meta.get_missing()
         )
     ))
