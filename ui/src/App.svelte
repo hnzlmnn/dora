@@ -6,6 +6,7 @@
 
 	import Dashboard from './views/Dashboard.svelte';
 	import Query from './views/Query.svelte';
+	import Export from './views/Export.svelte';
 	import Modify from './views/Modify.svelte';
 	import Swiper from './views/Swiper.svelte';
 
@@ -50,6 +51,7 @@
 			<Route path="/dashboard" component={Dashboard} />
 			<Route path="/query" exact component={Query} />
 			<Route path="/query/:context" exact component={Query} />
+			<Route path="/export/:context" exact component={Export} />
 			<Route path="/modify/:context/:line" exact component={Modify} />
 			<Route path="/swiper" component={Swiper} />
 			<Route fallback component={NotFound} />

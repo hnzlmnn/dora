@@ -1,3 +1,5 @@
+import base64
+import binascii
 from datetime import datetime
 
 from flask import jsonify, request
@@ -88,10 +90,10 @@ def line_select_auto():
         ))
     missing = meta.get_missing()
     remaining = missing[:]
-    for line in missing:
-        print("testing", line)
+    for line_no in missing:
+        print("testing", line_no)
         # First check if all entries are the same
-        lines = list(Entry.select(Entry.id, fn.Count(Entry.id), Entry.data).where(Entry.context == context, Entry.line == line).group_by(Entry.data).tuples())
+        lines = list(Entry.select(Entry.id, fn.Count(Entry.id), Entry.data).where(Entry.context == context, Entry.line == line_no).group_by(Entry.data).tuples())
         print(lines)
         if len(lines) == 0:
             # If none are found we don't know what to do
@@ -101,15 +103,34 @@ def line_select_auto():
             print("using", lines[0][0])
             Line.insert(
                 context=context,
-                line=line,
+                line=line_no,
                 entry=lines[0][0],
                 selected_at=datetime.now()
             ).on_conflict_replace().execute()
-            remaining.remove(line)
+            remaining.remove(line_no)
         else:
             # If there are different data check if only one is decodable
             print("MULTIPLE VALUES")
-            pass
+            data_map = {}
+            for i, line in enumerate(lines):
+                # Try to decode each data potion
+                try:
+                    _ = base64.b64decode(line[2])
+                    # If data is decodable, set line id for respective data
+                    data_map[line[2]] = line[0]
+                except (ValueError, binascii.Error):
+                    pass
+            # Check the amount of decodable data sets
+            if len(data_map.keys()) == 1:
+                # If only one data set was decodable, we're done
+                Line.insert(
+                    context=context,
+                    line=line_no,
+                    entry=list(data_map.values())[0],
+                    selected_at=datetime.now()
+                ).on_conflict_replace().execute()
+                remaining.remove(line_no)
+            # Else we don't know which data should be picked.
 
     print(remaining)
     return jsonify(dict(

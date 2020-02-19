@@ -35,6 +35,10 @@
         });
         return false
     }
+
+    function exportEntry(context) {
+        location.href = `/export/${context}`;
+    }
 </script>
 
 <div>
@@ -63,7 +67,7 @@
                 {/each}
                 </ul>
             {:else}
-                <button class="btn btn-warning" type="button" on:click={(e) => {e.preventDefault();autoselectLines(router.params.context);}}>Automatically assign lines</button>
+                <button class="btn btn-warning" type="button" on:click={(e) => {e.preventDefault();exportEntry(router.params.context);}}>Dump data</button>
             {/if}
             <h3>Assigned data so far:</h3>
             <TableSort items={Object.values(data.lines)} class="table table-striped">

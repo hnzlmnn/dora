@@ -67,3 +67,19 @@ def entry_detail(context: str):
             missing=meta.get_missing()
         )
     ))
+
+@app.route("/entry/<context>/export", methods=["GET"])
+def entry_export(context: str):
+    if not context:
+        return jsonify(dict(
+            ok=False,
+            error="Invalid context"
+        ))
+    lines = list(map(lambda l: l.entry.data.decode("ascii"), Line
+                     .select(Line.entry)
+                     .where(Line.context == context)
+                     .prefetch(Entry)))
+    return jsonify(dict(
+        ok=True,
+        data=lines
+    ))

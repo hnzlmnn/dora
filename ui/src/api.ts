@@ -26,6 +26,8 @@ interface Summary {
     missing: Array<number>
 }
 
+type Export = Array<string>
+
 export default class Api {
     private url: string;
 
@@ -91,5 +93,19 @@ export default class Api {
                 'Content-Type': 'application/json'
             }
         }))
+    }
+
+    public exportEntry(context: string, decoded: boolean = true) {
+        const response = this.handleResponse<Export>(fetch(`${this.url}/dora/entry/${encodeURIComponent(context)}/export`))
+        if (!decoded) return response;
+        return response.then(data => {
+            return data.reduce((lines: string, line: string) => {
+            try {
+                return lines + atob(line);
+            } catch (e) {
+                return lines;
+            }
+        }, '');
+        })
     }
 }
