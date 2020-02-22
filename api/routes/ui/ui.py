@@ -4,7 +4,7 @@ from flask import jsonify, request
 
 from . import app
 
-API_ROUTE = re.compile(r"^/(dora|swiper)")
+API_ROUTE = re.compile(r"^/(dora|swiper)/")
 
 
 @app.route("/")

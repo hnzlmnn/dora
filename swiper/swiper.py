@@ -43,5 +43,15 @@ class Swiper:
     def generate_dig(self, context: str, payload: str, metadata: bool):
         return self._generate_cmd("dig @localhost", context, payload, metadata)
 
+    def generate_drill(self, context: str, payload: str, metadata: bool):
+        return self._generate_cmd("drill @localhost", context, payload, metadata)
+
+    def generate_payload(self, dns_cmd: str, context: str, payload: str, metadata: bool):
+        if dns_cmd == "dig":
+            return self.generate_dig(context, payload, metadata)
+        elif dns_cmd == "drill":
+            return self.generate_drill(context, payload, metadata)
+        raise ValueError("Invalid command")
+
     def dns_match(self, host: bytes):
         return self.schema.match(host)

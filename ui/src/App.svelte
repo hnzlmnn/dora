@@ -39,13 +39,13 @@
 	</div>
 </nav>
 
-<main role="main" class="content">
+<main role="main" class="content d-flex flex-column">
 <!--	<div class="jumbotron">-->
 <!--		<h1>Navbar example</h1>-->
 <!--		<p class="lead">This example is a quick exercise to illustrate how fixed to top navbar works. As you scroll, it will remain fixed to the top of your browser's viewport.</p>-->
 <!--		<a class="btn btn-lg btn-primary" href="../../components/navbar/" role="button">View navbar docs &raquo;</a>-->
 <!--	</div>-->
-	<div class="container">
+	<div class="container flex-grow-1 d-flex flex-column">
 		<Router nofallback>
 			<Route path="/" exact component={Index} />
 			<Route path="/dashboard" component={Dashboard} />
@@ -59,10 +59,14 @@
 	</div>
 </main>
 
-<footer class="footer mt-auto py-3">
-  <div class="container">
-    <span class="text-muted">Place sticky footer content here.</span>
-  </div>
+<footer class="footer mt-auto">
+	<div class="container-fluid p-3 p-md-5 text-muted">
+		<ul class="">
+			<li><a href="https://github.com/hnzlmnn/dora">GitHub</a></li>
+			<li><a href="https://twitter.com/hnzlmnn">Twitter</a></li>
+		</ul>
+		<p>Dora the DNS explorer was built by <a href="mailto:malte@cybaer.ninja">Malte Heinzelmann</a> licensed under <a href="https://opensource.org/licenses/BSD-3-Clause">BSD 3 Clause</a>.</p>
+	</div>
 </footer>
 
 <style>
@@ -71,7 +75,7 @@
 	}
 
 	main {
-		text-align: center;
+		text-align: left;
 		width: 100%;
 		margin: 0 auto;
 		flex: 1 0 auto;
@@ -79,6 +83,25 @@
 
 	footer {
 		flex-shrink: 0;
+		font-size: .875rem;
+	}
+
+	footer p {
+		margin-bottom: 0;
+	}
+
+	footer ul {
+		padding-left: 0;
+    	margin-bottom: 1rem;
+	}
+
+	footer ul li {
+		display: inline-block;
+	}
+
+	footer a {
+		font-weight: 600;
+		color: #495057;
 	}
 
 	h1 {

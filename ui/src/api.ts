@@ -108,4 +108,22 @@ export default class Api {
         }, '');
         })
     }
+
+    public generateContext() {
+        return this.handleResponse<null>(fetch(`${this.url}/swiper/context`))
+    }
+
+    public generatePayload(context: string, tool: string, command: string) {
+        return this.handleResponse<null>(fetch(`${this.url}/swiper/payload`, {
+            method: "POST",
+            body: JSON.stringify({
+                context,
+                tool,
+                command,
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }))
+    }
 }
